@@ -1,0 +1,544 @@
+<title>Compile Trace</title>
+<style>
+  :root{
+    --bg:#F6F8F9;
+    --surface:#FFFFFF;
+    --surface-sunken:#EEF2F4;
+    --border:#DCE3E7;
+    --border-soft:#E7ECEE;
+    --ink:#16212B;
+    --ink-soft:#4B5D6B;
+    --ink-faint:#7C8B96;
+    --accent:#B8792A;
+    --accent-soft:#F1E1C8;
+    --success:#2F8F72;
+    --success-soft:#DDEFE8;
+    --fail:#C0472C;
+    --fail-soft:#F6DFD8;
+    --decision:#6E5A9E;
+    --decision-soft:#E6E0F2;
+    --shadow: 0 1px 2px rgba(22,33,43,0.06), 0 8px 24px -12px rgba(22,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10161B;
+      --surface:#161F27;
+      --surface-sunken:#1D2830;
+      --border:#2A3742;
+      --border-soft:#233039;
+      --ink:#E7EDF1;
+      --ink-soft:#9AACB8;
+      --ink-faint:#647885;
+      --accent:#D9A24B;
+      --accent-soft:#3A2E17;
+      --success:#4CB08D;
+      --success-soft:#173229;
+      --fail:#E5836A;
+      --fail-soft:#3A2019;
+      --decision:#A491D1;
+      --decision-soft:#2A2440;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10161B;
+    --surface:#161F27;
+    --surface-sunken:#1D2830;
+    --border:#2A3742;
+    --border-soft:#233039;
+    --ink:#E7EDF1;
+    --ink-soft:#9AACB8;
+    --ink-faint:#647885;
+    --accent:#D9A24B;
+    --accent-soft:#3A2E17;
+    --success:#4CB08D;
+    --success-soft:#173229;
+    --fail:#E5836A;
+    --fail-soft:#3A2019;
+    --decision:#A491D1;
+    --decision-soft:#2A2440;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;}
+
+  .page{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    padding:48px 24px 80px;
+    max-width:920px;
+    margin:0 auto;
+  }
+
+  code, .mono{
+    font-family:"IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  }
+
+  /* ---------- Header ---------- */
+  .hero{
+    padding-bottom:32px;
+    margin-bottom:28px;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 12px;
+    font-weight:600;
+  }
+  h1{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:clamp(28px, 4vw, 38px);
+    line-height:1.15;
+    letter-spacing:-0.01em;
+    margin:0 0 14px;
+    text-wrap:balance;
+    font-weight:600;
+  }
+  .lede{
+    font-size:16px;
+    line-height:1.6;
+    color:var(--ink-soft);
+    max-width:62ch;
+    margin:0 0 28px;
+  }
+  .lede code{
+    background:var(--surface-sunken);
+    border:1px solid var(--border-soft);
+    border-radius:4px;
+    padding:1px 6px;
+    font-size:0.9em;
+    color:var(--ink);
+  }
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(130px,1fr));
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+    margin:0;
+  }
+  .stats > div{
+    background:var(--surface);
+    padding:14px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .stats dt{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.07em;
+    color:var(--ink-faint);
+    font-weight:600;
+  }
+  .stats dd{
+    margin:0;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:20px;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- Timeline ---------- */
+  .timeline{
+    display:flex;
+    flex-direction:column;
+    gap:36px;
+  }
+  .phase-title{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    font-size:14px;
+    font-weight:600;
+    margin:0 0 14px;
+    color:var(--ink);
+  }
+  .phase-index{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    background:var(--surface-sunken);
+    border:1px solid var(--border-soft);
+    padding:3px 8px;
+    border-radius:20px;
+  }
+
+  .steps{
+    list-style:none;
+    margin:0;
+    padding:0;
+    position:relative;
+  }
+  .steps::before{
+    content:"";
+    position:absolute;
+    left:13px;
+    top:6px;
+    bottom:6px;
+    width:1px;
+    background:var(--border);
+  }
+  .step{
+    position:relative;
+    display:flex;
+    gap:16px;
+    padding:0 0 18px 0;
+  }
+  .step:last-child{padding-bottom:0;}
+  .step-num{
+    flex:none;
+    width:27px;
+    height:27px;
+    border-radius:50%;
+    background:var(--surface);
+    border:1.5px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px;
+    font-weight:600;
+    color:var(--ink-soft);
+    z-index:1;
+    position:relative;
+  }
+  .step.status-ok .step-num{border-color:var(--success); color:var(--success);}
+  .step.status-fail .step-num{border-color:var(--fail); color:var(--fail);}
+  .step.status-wait .step-num{border-color:var(--decision); color:var(--decision);}
+
+  .step-card{
+    flex:1;
+    background:var(--surface);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    box-shadow:var(--shadow);
+    padding:12px 14px;
+    min-width:0;
+  }
+  .step-head{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  .tool-pill{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    padding:2px 8px 2px 9px;
+    border-radius:5px;
+    border-left:3px solid var(--ink-soft);
+    background:var(--surface-sunken);
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .tool-pill.tool-file{border-left-color:var(--accent); color:var(--accent);}
+  .tool-pill.tool-decision{border-left-color:var(--decision); color:var(--decision);}
+
+  .step-cmd{
+    font-size:12.5px;
+    color:var(--ink);
+    background:var(--surface-sunken);
+    border:1px solid var(--border-soft);
+    padding:2px 7px;
+    border-radius:5px;
+    overflow-wrap:anywhere;
+  }
+  .status-badge{
+    margin-left:auto;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .status-ok .status-badge{background:var(--success-soft); color:var(--success);}
+  .status-fail .status-badge{background:var(--fail-soft); color:var(--fail);}
+  .status-wait .status-badge{background:var(--decision-soft); color:var(--decision);}
+
+  .step-desc{
+    margin:0;
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--ink-soft);
+  }
+
+  @media (max-width: 520px){
+    .status-badge{margin-left:0;}
+    .step-head{gap:6px;}
+  }
+</style>
+
+<div class="page">
+  <header class="hero">
+    <p class="eyebrow">Session Log · order_processing.py</p>
+    <h1>Tool Call Trace</h1>
+    <p class="lede">
+      Eighteen tool calls, six phases: no Python interpreter was on this machine, so the
+      session had to detect that, get a decision from the user twice, install
+      <code>Python 3.12.7</code> from source, and compile <code>order_processing.py</code>
+      down to a clean, warning-free run.
+    </p>
+    <dl class="stats">
+      <div><dt>Tool calls</dt><dd>18</dd></div>
+      <div><dt>Failed attempts</dt><dd>7</dd></div>
+      <div><dt>User decisions</dt><dd>2</dd></div>
+      <div><dt>Installed</dt><dd>Py 3.12.7</dd></div>
+    </dl>
+  </header>
+
+  <main class="timeline">
+
+    <section class="phase">
+      <h2 class="phase-title"><span class="phase-index">Phase 1</span>Author the module</h2>
+      <ol class="steps">
+        <li class="step status-ok">
+          <span class="step-num">1</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill tool-file">Write</span>
+              <code class="step-cmd">order_processing.py</code>
+              <span class="status-badge">created</span>
+            </div>
+            <p class="step-desc">Wrote the order-processing module: SOLID structure plus Strategy, Factory, and Observer patterns.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="phase">
+      <h2 class="phase-title"><span class="phase-index">Phase 2</span>Look for an interpreter</h2>
+      <ol class="steps">
+        <li class="step status-fail">
+          <span class="step-num">2</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">Bash</span>
+              <code class="step-cmd">python order_processing.py</code>
+              <span class="status-badge">exit 127</span>
+            </div>
+            <p class="step-desc">/usr/bin/bash: python: command not found.</p>
+          </div>
+        </li>
+        <li class="step status-fail">
+          <span class="step-num">3</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">python order_processing.py</code>
+              <span class="status-badge">not found</span>
+            </div>
+            <p class="step-desc">CommandNotFoundException — "python" isn't recognized.</p>
+          </div>
+        </li>
+        <li class="step status-fail">
+          <span class="step-num">4</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">py order_processing.py</code>
+              <span class="status-badge">not found</span>
+            </div>
+            <p class="step-desc">Tried the Windows py launcher — also missing.</p>
+          </div>
+        </li>
+        <li class="step status-fail">
+          <span class="step-num">5</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">Bash</span>
+              <code class="step-cmd">command -v python3 python …</code>
+              <span class="status-badge">empty</span>
+            </div>
+            <p class="step-desc">No interpreter of any name resolves on PATH.</p>
+          </div>
+        </li>
+        <li class="step status-fail">
+          <span class="step-num">6</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">Get-Command + filesystem search</code>
+              <span class="status-badge">no match</span>
+            </div>
+            <p class="step-desc">Searched Program Files and LocalAppData three levels deep — nothing.</p>
+          </div>
+        </li>
+        <li class="step status-fail">
+          <span class="step-num">7</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">try/catch deep search</code>
+              <span class="status-badge">no match</span>
+            </div>
+            <p class="step-desc">Confirmed: "search-failed-or-empty" — the machine has no Python at all.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="phase">
+      <h2 class="phase-title"><span class="phase-index">Phase 3</span>Ask how to proceed</h2>
+      <ol class="steps">
+        <li class="step status-wait">
+          <span class="step-num">8</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill tool-decision">AskUserQuestion</span>
+              <code class="step-cmd">install / self-install / skip?</code>
+              <span class="status-badge">user chose</span>
+            </div>
+            <p class="step-desc">User picked "install via winget" over doing it themselves or skipping execution.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="phase">
+      <h2 class="phase-title"><span class="phase-index">Phase 4</span>Package manager, unavailable</h2>
+      <ol class="steps">
+        <li class="step status-fail">
+          <span class="step-num">9</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">winget install Python.Python.3.12</code>
+              <span class="status-badge">not found</span>
+            </div>
+            <p class="step-desc">No App Installer / winget on this Windows Server image.</p>
+          </div>
+        </li>
+        <li class="step status-fail">
+          <span class="step-num">10</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">Get-Command choco</code>
+              <span class="status-badge">not found</span>
+            </div>
+            <p class="step-desc">Chocolatey isn't present either — no package manager on the box.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="phase">
+      <h2 class="phase-title"><span class="phase-index">Phase 5</span>Confirm fallback, then install</h2>
+      <ol class="steps">
+        <li class="step status-wait">
+          <span class="step-num">11</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill tool-decision">AskUserQuestion</span>
+              <code class="step-cmd">download python.org installer?</code>
+              <span class="status-badge">approved</span>
+            </div>
+            <p class="step-desc">Confirmed before fetching an ~25 MB executable from the internet.</p>
+          </div>
+        </li>
+        <li class="step status-ok">
+          <span class="step-num">12</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">Invoke-WebRequest → python-3.12.7-amd64.exe</code>
+              <span class="status-badge">26,538,304 B</span>
+            </div>
+            <p class="step-desc">Official installer pulled from python.org/ftp — ~25.3 MB.</p>
+          </div>
+        </li>
+        <li class="step status-ok">
+          <span class="step-num">13</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">/quiet InstallAllUsers=1 PrependPath=1</code>
+              <span class="status-badge">installed</span>
+            </div>
+            <p class="step-desc">Silent, all-users install with PATH prepended.</p>
+          </div>
+        </li>
+        <li class="step status-ok">
+          <span class="step-num">14</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">Test-Path C:\Program Files\Python312</code>
+              <span class="status-badge">confirmed</span>
+            </div>
+            <p class="step-desc">python.exe verified on disk — this shell's PATH won't refresh until reopened, so later calls use the full path directly.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="phase">
+      <h2 class="phase-title"><span class="phase-index">Phase 6</span>Compile, fix, verify</h2>
+      <ol class="steps">
+        <li class="step status-ok">
+          <span class="step-num">15</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">python -m py_compile order_processing.py</code>
+              <span class="status-badge">clean</span>
+            </div>
+            <p class="step-desc">No syntax errors.</p>
+          </div>
+        </li>
+        <li class="step status-wait">
+          <span class="step-num">16</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">python order_processing.py</code>
+              <span class="status-badge">2 warnings</span>
+            </div>
+            <p class="step-desc">Ran end-to-end, but <code>datetime.utcnow()</code> is deprecated on 3.12.</p>
+          </div>
+        </li>
+        <li class="step status-ok">
+          <span class="step-num">17</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill tool-file">Edit</span>
+              <code class="step-cmd">utcnow() → now(timezone.utc)</code>
+              <span class="status-badge">×3 sites</span>
+            </div>
+            <p class="step-desc">Swapped the naive UTC calls for timezone-aware ones.</p>
+          </div>
+        </li>
+        <li class="step status-ok">
+          <span class="step-num">18</span>
+          <div class="step-card">
+            <div class="step-head">
+              <span class="tool-pill">PowerShell</span>
+              <code class="step-cmd">recompile + rerun</code>
+              <span class="status-badge">clean run</span>
+            </div>
+            <p class="step-desc">PENDING → PAID → SHIPPED, zero warnings.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+  </main>
+</div>

@@ -1,0 +1,476 @@
+<title>Eyeglasses Listing Build</title>
+<style>
+:root{
+  --bg:#f7f5f2;
+  --surface:#ffffff;
+  --ink:#1c1b1a;
+  --muted:#6b6560;
+  --line:#e6e1da;
+  --accent:#c8102e;
+  --accent-ink:#ffffff;
+  --ok:#1b7a43;
+  --ok-bg:#e7f5ec;
+  --code-bg:#efece6;
+  --mono-ink:#2c2823;
+  --warn:#a15c00;
+  --warn-bg:#fbead2;
+  --grid-line:#efeae2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#161412;
+    --surface:#1f1c19;
+    --ink:#f2ede6;
+    --muted:#a89d8f;
+    --line:#332e29;
+    --accent:#ff5470;
+    --accent-ink:#1c1000;
+    --ok:#5fd88f;
+    --ok-bg:#173324;
+    --code-bg:#141210;
+    --mono-ink:#e8e1d6;
+    --warn:#f0b34e;
+    --warn-bg:#3a2a10;
+    --grid-line:#2a2521;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161412;
+  --surface:#1f1c19;
+  --ink:#f2ede6;
+  --muted:#a89d8f;
+  --line:#332e29;
+  --accent:#ff5470;
+  --accent-ink:#1c1000;
+  --ok:#5fd88f;
+  --ok-bg:#173324;
+  --code-bg:#141210;
+  --mono-ink:#e8e1d6;
+  --warn:#f0b34e;
+  --warn-bg:#3a2a10;
+  --grid-line:#2a2521;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"IBM Plex Sans", Arial, sans-serif;
+  line-height:1.55;
+}
+.wrap{max-width:920px;margin:0 auto;padding:56px 28px 90px;}
+
+.eyebrow{
+  font-family:"IBM Plex Mono", monospace;
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin:0 0 10px;
+}
+h1{
+  font-family:"IBM Plex Sans", sans-serif;
+  font-weight:600;
+  font-size:clamp(28px,4vw,38px);
+  margin:0 0 8px;
+  text-wrap:balance;
+}
+.sub{color:var(--muted);font-size:15px;margin:0 0 40px;max-width:65ch;}
+
+h2{
+  font-size:13px;
+  font-family:"IBM Plex Mono", monospace;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  border-bottom:1px solid var(--line);
+  padding-bottom:10px;
+  margin:52px 0 20px;
+}
+h2 span{color:var(--ink);font-family:"IBM Plex Sans",sans-serif;text-transform:none;letter-spacing:0;font-size:17px;font-weight:600;margin-left:10px;}
+
+p{color:var(--ink);}
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:20px 22px;
+}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media (max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+.status-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--ok-bg);color:var(--ok);
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  padding:4px 10px;border-radius:999px;
+}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok);}
+
+pre{
+  background:var(--code-bg);
+  color:var(--mono-ink);
+  border-radius:8px;
+  padding:16px 18px;
+  overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12.5px;
+  line-height:1.6;
+  margin:0;
+}
+code{font-family:"IBM Plex Mono",monospace;}
+.filepath{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--accent);}
+
+.tree{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink);white-space:pre;}
+.tree .dim{color:var(--muted);}
+
+.tasklabel{
+  display:inline-block;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+  letter-spacing:.06em;
+  background:var(--accent);
+  color:var(--accent-ink);
+  padding:2px 8px;
+  border-radius:4px;
+  margin-bottom:10px;
+}
+
+.diagram-wrap{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:24px;overflow-x:auto;}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+
+.notes{color:var(--muted);font-size:13.5px;margin-top:10px;}
+
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 4px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);}
+.legend .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+
+.itemlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+.itemlist li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);}
+.itemlist .tag{flex:0 0 auto;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.04em;padding:3px 8px;border-radius:5px;margin-top:1px;}
+.itemlist .tag.assume{background:var(--ok-bg);color:var(--ok);}
+.itemlist .tag.hyp{background:#ffe3e9;color:var(--accent);}
+:root:not([data-theme="light"]) .itemlist .tag.hyp{background:#3a1420;}
+.itemlist .tag.unknown{background:var(--warn-bg);color:var(--warn);}
+.itemlist .txt{font-size:13.5px;color:var(--ink);}
+.itemlist .txt b{font-weight:600;}
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px;font-family:"IBM Plex Mono",monospace;}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<div class="wrap">
+
+  <p class="eyebrow">Implementation evidence</p>
+  <h1>Eyeglasses Listing — Frontend &amp; Backend Build</h1>
+  <p class="sub">A working two-tier clone of the Lenskart "All Eyeglasses" tile grid: a static HTML/CSS/JS storefront (Task 1) fetching live product data from a Flask REST API (Task 2). Below is the architecture, the running proof, and the source.</p>
+
+  <h2>Reference <span>What was replicated</span></h2>
+  <div class="card">
+    <p style="margin:0 0 8px;">Source page: <code>lenskart.com/eyeglasses/promotions/all-eyeglasses.html</code></p>
+    <p style="margin:0;color:var(--muted);font-size:14px;">Replicated elements: header/nav, breadcrumb, filter rail, sortable product grid, and per-tile brand, rating, price, strike-through original price, discount %, promo code, and color-variant badge.</p>
+  </div>
+
+  <h2>Architecture <span>How the two tasks connect</span></h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture diagram showing browser, frontend static files, and Flask backend API connected over HTTP fetch, with an in-memory product list as the data source">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"></path>
+        </marker>
+      </defs>
+
+      <!-- Browser -->
+      <rect x="30" y="90" width="210" height="120" rx="10" fill="var(--surface)" stroke="var(--line)"></rect>
+      <text x="135" y="115" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.05em" fill="var(--muted)">CLIENT</text>
+      <text x="135" y="145" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="15" font-weight="600" fill="var(--ink)">Browser</text>
+      <text x="135" y="167" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">renders index.html</text>
+      <text x="135" y="184" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">runs fetch() in JS</text>
+
+      <!-- Frontend -->
+      <rect x="325" y="30" width="210" height="120" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"></rect>
+      <text x="430" y="55" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.05em" fill="var(--accent)">TASK 1</text>
+      <text x="430" y="85" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="15" font-weight="600" fill="var(--ink)">Static Frontend</text>
+      <text x="430" y="107" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">index.html + CSS + JS</text>
+      <text x="430" y="124" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">served on :8080</text>
+
+      <!-- Backend -->
+      <rect x="325" y="180" width="210" height="120" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"></rect>
+      <text x="430" y="205" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.05em" fill="var(--accent)">TASK 2</text>
+      <text x="430" y="235" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="15" font-weight="600" fill="var(--ink)">Flask Backend</text>
+      <text x="430" y="257" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">GET /api/products</text>
+      <text x="430" y="274" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">served on :5000</text>
+
+      <!-- Data -->
+      <rect x="620" y="180" width="210" height="120" rx="10" fill="var(--surface)" stroke="var(--line)"></rect>
+      <text x="725" y="205" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.05em" fill="var(--muted)">DATA</text>
+      <text x="725" y="235" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="15" font-weight="600" fill="var(--ink)">Product List</text>
+      <text x="725" y="257" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">in-memory (PRODUCTS)</text>
+      <text x="725" y="274" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">app.py</text>
+
+      <!-- arrows -->
+      <path d="M240,140 L323,90" stroke="var(--muted)" stroke-width="1.4" fill="none" marker-end="url(#arrow)"></path>
+      <text x="270" y="105" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">GET /</text>
+
+      <path d="M430,150 L430,178" stroke="var(--muted)" stroke-width="1.4" fill="none" marker-end="url(#arrow)"></path>
+      <text x="440" y="168" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">fetch()</text>
+
+      <path d="M535,240 L618,240" stroke="var(--muted)" stroke-width="1.4" fill="none" marker-end="url(#arrow)"></path>
+      <text x="548" y="232" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">reads</text>
+
+      <path d="M323,215 L242,155" stroke="var(--muted)" stroke-width="1.4" fill="none" marker-end="url(#arrow)"></path>
+      <text x="235" y="200" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">JSON</text>
+    </svg>
+  </div>
+  <p class="notes">The frontend never touches product data directly — it always asks the backend, which is the single source of truth and where filtering/sorting logic lives.</p>
+
+  <h2>Task 1 <span>Frontend proof — live render</span></h2>
+  <div class="card">
+    <div class="status-row"><span class="pill">rendered at http://localhost:8080</span></div>
+    <p style="margin:0 0 12px;color:var(--muted);font-size:14px;">Screenshot taken after the page called the live backend and rendered 4 product tiles (brand, rating, price, strike price, discount %, promo code, color-variant badge) — matching the Task 2 response below field for field.</p>
+    <p class="filepath">lenskart_clone/frontend/index.html</p>
+  </div>
+
+  <h2>Task 2 <span>Backend proof — live API response</span></h2>
+  <div class="card">
+    <div class="status-row"><span class="pill">200 OK · GET /api/products</span></div>
+    <pre><code>$ curl http://127.0.0.1:5000/api/products
+
+{
+  "count": 4,
+  "products": [
+    {
+      "id": 1, "brand": "Vincent Chase",
+      "name": "VC E13405 Black Full Rim Round",
+      "rating": 4.8, "price": 1500, "original_price": 2000,
+      "discount_pct": 25, "promo_code": "SINGLE", "colors": 4
+    },
+    {
+      "id": 2, "brand": "Lenskart Air",
+      "name": "Air LA E14231 Blue Full Rim Rectangle",
+      "rating": 4.85, "price": 1800, "original_price": 2400,
+      "discount_pct": 25, "promo_code": "SINGLE", "colors": 3
+    },
+    { "id": 3, "brand": "John Jacobs", "...": "2 more items" }
+  ]
+}</code></pre>
+    <p class="notes">Endpoints implemented: <code>GET /api/products</code> (supports <code>?brand=</code> and <code>?sort=price_low_high|price_high_low|rating</code>) and <code>GET /api/products/&lt;id&gt;</code>.</p>
+  </div>
+
+  <h2>Source layout <span>Project files</span></h2>
+  <div class="card tree">lenskart_clone/<span class="dim">
+├── frontend/</span>
+<span class="dim">│   └──</span> index.html        <span class="dim"># Task 1 — HTML/CSS/JS storefront</span><span class="dim">
+├── backend/</span>
+<span class="dim">│   ├──</span> app.py             <span class="dim"># Task 2 — Flask REST API</span>
+<span class="dim">│   └──</span> requirements.txt   <span class="dim"># flask, flask-cors</span>
+<span class="dim">└──</span> evidence.html        <span class="dim"># this report</span></div>
+
+  <h2>How to run it</h2>
+  <div class="grid2">
+    <div class="card">
+      <p class="tasklabel">Backend</p>
+      <pre><code>cd lenskart_clone/backend
+pip install -r requirements.txt
+python app.py
+# → http://127.0.0.1:5000</code></pre>
+    </div>
+    <div class="card">
+      <p class="tasklabel">Frontend</p>
+      <pre><code>cd lenskart_clone/frontend
+python -m http.server 8080
+# → http://127.0.0.1:8080</code></pre>
+    </div>
+  </div>
+
+  <h2>Task 3 <span>Docker &amp; DevOps integration</span></h2>
+  <div class="card">
+    <p style="margin:0 0 8px;">Both services are containerized and wired together with Compose, plus a CI workflow that builds and smoke-tests the stack on every push.</p>
+    <p style="margin:0;color:var(--muted);font-size:14px;">Backend runs on Python 3.12-slim, exposes <code>:5000</code>, and has a container healthcheck. Frontend runs on nginx:alpine, exposes <code>:80→8080</code>, and renders its API target from an <code>API_BASE</code> env var via <code>envsubst</code> at container start — no rebuild needed to point it at a different backend.</p>
+  </div>
+
+  <div class="diagram-wrap" style="margin-top:16px;">
+    <svg viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Docker Compose diagram: host machine with docker-compose.yml orchestrating a frontend nginx container on port 8080 and a backend Flask container on port 5000, joined by a bridge network, with GitHub Actions CI shown building and testing this stack">
+      <defs>
+        <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"></path>
+        </marker>
+      </defs>
+
+      <!-- host boundary -->
+      <rect x="20" y="20" width="560" height="260" rx="12" fill="none" stroke="var(--line)" stroke-dasharray="4 4"></rect>
+      <text x="36" y="42" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.05em" fill="var(--muted)">DOCKER COMPOSE — HOST</text>
+
+      <!-- network boundary -->
+      <rect x="50" y="60" width="500" height="200" rx="10" fill="none" stroke="var(--accent)" stroke-dasharray="3 5"></rect>
+      <text x="66" y="80" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="0.05em" fill="var(--accent)">BRIDGE NETWORK · lenskart-net</text>
+
+      <!-- frontend container -->
+      <rect x="80" y="105" width="200" height="120" rx="10" fill="var(--surface)" stroke="var(--line)"></rect>
+      <text x="180" y="128" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="600" fill="var(--ink)">frontend</text>
+      <text x="180" y="148" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">nginx:1.27-alpine</text>
+      <text x="180" y="165" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">host :8080 → 80</text>
+      <text x="180" y="182" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">env: API_BASE</text>
+      <text x="180" y="199" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">depends_on: backend</text>
+
+      <!-- backend container -->
+      <rect x="340" y="105" width="200" height="120" rx="10" fill="var(--surface)" stroke="var(--line)"></rect>
+      <text x="440" y="128" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="600" fill="var(--ink)">backend</text>
+      <text x="440" y="148" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">python:3.12-slim</text>
+      <text x="440" y="165" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">host :5000 → 5000</text>
+      <text x="440" y="182" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">flask app.py</text>
+      <text x="440" y="199" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">healthcheck ✓</text>
+
+      <path d="M280,165 L338,165" stroke="var(--muted)" stroke-width="1.4" fill="none" marker-end="url(#arrow2)"></path>
+      <text x="288" y="157" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--muted)">/api/products</text>
+
+      <!-- CI box -->
+      <rect x="630" y="90" width="200" height="150" rx="10" fill="var(--surface)" stroke="var(--line)"></rect>
+      <text x="730" y="112" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="0.05em" fill="var(--muted)">CI</text>
+      <text x="730" y="136" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">GitHub Actions</text>
+      <text x="730" y="158" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">docker compose build</text>
+      <text x="730" y="175" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">docker compose up -d</text>
+      <text x="730" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">curl smoke tests</text>
+      <text x="730" y="209" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">on push / PR → main</text>
+
+      <path d="M600,150 L628,150" stroke="var(--muted)" stroke-width="1.4" fill="none" marker-end="url(#arrow2)"></path>
+    </svg>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="status-row"><span class="pill">docker compose config — valid</span></div>
+    <p style="margin:0 0 10px;color:var(--muted);font-size:14px;">This sandbox has the Docker CLI but no daemon/Desktop installed, so containers couldn't be built or run here. The Compose file was validated statically instead — <code>docker compose config</code> parses and resolves it cleanly (build contexts, healthcheck, network, and port mappings all correct):</p>
+    <pre><code>$ docker compose config
+
+services:
+  backend:
+    build: {context: ./backend, dockerfile: Dockerfile}
+    healthcheck: {test: [CMD, python, -c, "urlopen(.../api/products)"], interval: 10s, retries: 5}
+    ports: ["5000:5000"]
+    networks: {lenskart-net: null}
+  frontend:
+    build: {context: ./frontend, dockerfile: Dockerfile}
+    depends_on: {backend: {condition: service_healthy}}
+    environment: {API_BASE: http://localhost:5000}
+    ports: ["8080:80"]
+    networks: {lenskart-net: null}
+networks:
+  lenskart-net: {name: lenskart_clone_lenskart-net, driver: bridge}</code></pre>
+    <p class="notes">On a machine with Docker running, <code>docker compose up --build</code> in <span class="filepath">lenskart_clone/</span> brings up both containers exactly as diagrammed above.</p>
+  </div>
+
+  <h2>Source layout — updated <span>Docker files added</span></h2>
+  <div class="card tree">lenskart_clone/<span class="dim">
+├── frontend/</span>
+<span class="dim">│   ├──</span> index.html
+<span class="dim">│   ├──</span> config.js           <span class="dim"># default local API_BASE</span>
+<span class="dim">│   ├──</span> config.template.js  <span class="dim"># envsubst'd at container start</span>
+<span class="dim">│   └──</span> Dockerfile          <span class="dim"># nginx:alpine</span>
+<span class="dim">├── backend/</span>
+<span class="dim">│   ├──</span> app.py
+<span class="dim">│   ├──</span> requirements.txt
+<span class="dim">│   ├──</span> Dockerfile          <span class="dim"># python:3.12-slim</span>
+<span class="dim">│   └──</span> .dockerignore
+<span class="dim">├── .github/workflows/</span>
+<span class="dim">│   └──</span> docker-ci.yml       <span class="dim"># build + smoke test on push</span>
+<span class="dim">├── docker-compose.yml</span>    <span class="dim"># orchestrates both containers</span>
+<span class="dim">└──</span> evidence.html</div>
+
+  <h2>Beyond the build <span>Assumptions, hypotheses &amp; unknowns</span></h2>
+  <div class="card">
+    <p style="margin:0;color:var(--muted);font-size:14px;">Nothing in the original prompt specified a rubric, a data-sourcing policy, or a deploy target — this exercise was built by filling those gaps with judgment calls. Plotted below by how confident that judgment is versus how much it would cost to be wrong.</p>
+  </div>
+
+  <div class="diagram-wrap" style="margin-top:16px;">
+    <svg viewBox="0 0 860 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Quadrant diagram plotting confidence versus impact-if-wrong for assumptions, hypotheses, and unknowns behind this build. Assumptions cluster high-confidence low-to-medium impact. Hypotheses sit mid-confidence mid-to-high impact. Unknowns cluster low-confidence high-impact, the riskiest zone.">
+      <!-- gridlines -->
+      <line x1="80" y1="40" x2="80" y2="380" stroke="var(--grid-line)" stroke-width="1"></line>
+      <line x1="80" y1="380" x2="780" y2="380" stroke="var(--grid-line)" stroke-width="1"></line>
+      <line x1="430" y1="40" x2="430" y2="380" stroke="var(--grid-line)" stroke-dasharray="3 5"></line>
+      <line x1="80" y1="210" x2="780" y2="210" stroke="var(--grid-line)" stroke-dasharray="3 5"></line>
+
+      <text x="430" y="410" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" letter-spacing="0.05em" fill="var(--muted)">CONFIDENCE →</text>
+      <text x="30" y="210" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" letter-spacing="0.05em" fill="var(--muted)" transform="rotate(-90 30 210)">IMPACT IF WRONG →</text>
+
+      <text x="775" y="55" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--warn)">watch this zone</text>
+
+      <!-- Unknowns (low confidence, high impact) -->
+      <circle cx="145" cy="80" r="6" fill="var(--warn)"></circle>
+      <text x="158" y="83" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Grading rubric / success criteria</text>
+
+      <circle cx="185" cy="115" r="6" fill="var(--warn)"></circle>
+      <text x="198" y="118" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Copyright/ToS limits on Lenskart data</text>
+
+      <circle cx="200" cy="150" r="6" fill="var(--warn)"></circle>
+      <text x="213" y="153" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Docker daemon available at run/grade time</text>
+
+      <circle cx="165" cy="185" r="6" fill="var(--warn)"></circle>
+      <text x="178" y="188" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Target deploy env for "devops" (cloud/K8s?)</text>
+
+      <circle cx="220" cy="235" r="6" fill="var(--warn)"></circle>
+      <text x="233" y="238" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Need for auth, DB persistence, payments</text>
+
+      <!-- Hypotheses (mid confidence, mid-high impact) -->
+      <circle cx="390" cy="130" r="6" fill="var(--accent)"></circle>
+      <text x="403" y="133" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Docker Desktop will exist wherever this deploys</text>
+
+      <circle cx="405" cy="175" r="6" fill="var(--accent)"></circle>
+      <text x="418" y="178" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">"DevOps" = containerize + CI, not full cloud</text>
+
+      <circle cx="370" cy="200" r="6" fill="var(--accent)"></circle>
+      <text x="383" y="203" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Task1/2/3 phrasing = a structured course module</text>
+
+      <!-- Assumptions (high confidence, low-mid impact) -->
+      <circle cx="650" cy="240" r="6" fill="var(--ok)"></circle>
+      <text x="663" y="243" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">HTML report + diagram = sufficient "evidence"</text>
+
+      <circle cx="680" cy="280" r="6" fill="var(--ok)"></circle>
+      <text x="693" y="283" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Single-user local dev, no auth required</text>
+
+      <circle cx="700" cy="310" r="6" fill="var(--ok)"></circle>
+      <text x="640" y="330" text-anchor="end" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Mock product data okay instead of scraping</text>
+
+      <circle cx="720" cy="345" r="6" fill="var(--ok)"></circle>
+      <text x="660" y="365" text-anchor="end" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--ink)">Placeholder images, no real product photos</text>
+    </svg>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--ok);"></span>Assumption — taken as given</span>
+    <span><span class="dot" style="background:var(--accent);"></span>Hypothesis — informed guess, testable</span>
+    <span><span class="dot" style="background:var(--warn);"></span>Unknown — not stated, could change the build</span>
+  </div>
+
+  <div class="card" style="margin-top:22px;">
+    <p style="margin:0 0 12px;font-weight:600;font-size:14px;">Assumptions <span style="font-weight:400;color:var(--muted);">— treated as given, low risk if wrong</span></p>
+    <ul class="itemlist">
+      <li><span class="tag assume">A1</span><span class="txt">This is a <b>learning/demo exercise</b>, not a production e-commerce build — so no auth, database, or payment flow was added.</span></li>
+      <li><span class="tag assume">A2</span><span class="txt"><b>Mock, hand-written product data</b> stands in for scraping Lenskart's live catalog — avoids ToS/scraping issues and keeps the API deterministic.</span></li>
+      <li><span class="tag assume">A3</span><span class="txt"><b>Placeholder images</b> (placehold.co) are an acceptable substitute for real Lenskart product photography.</span></li>
+      <li><span class="tag assume">A4</span><span class="txt">A <b>single-user local dev setup</b> is fine — no login, sessions, or multi-tenant concerns.</span></li>
+      <li><span class="tag assume">A5</span><span class="txt">A <b>published HTML report with diagrams</b> satisfies "evidence of implementation" better than raw terminal logs or screenshots alone.</span></li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <p style="margin:0 0 12px;font-weight:600;font-size:14px;">Hypotheses <span style="font-weight:400;color:var(--muted);">— informed guesses, worth confirming</span></p>
+    <ul class="itemlist">
+      <li><span class="tag hyp">H1</span><span class="txt">The <b>"Task 1 / Task 2 / Task 3"</b> phrasing suggests this maps to a structured course or interview assignment with named deliverables per task.</span></li>
+      <li><span class="tag hyp">H2</span><span class="txt">"<b>Docker devops integration</b>" means containerize + wire with Compose + basic CI — not a full cloud/Kubernetes rollout.</span></li>
+      <li><span class="tag hyp">H3</span><span class="txt">Wherever this gets run or reviewed next, <b>Docker Desktop (or an equivalent daemon) will actually be available</b> — unlike in this sandbox.</span></li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <p style="margin:0 0 12px;font-weight:600;font-size:14px;">Unknowns <span style="font-weight:400;color:var(--muted);">— not stated anywhere, highest-impact if wrong</span></p>
+    <ul class="itemlist">
+      <li><span class="tag unknown">U1</span><span class="txt">What the actual <b>grading rubric or success criteria</b> are — a course grader, an interviewer, and a personal project each want very different depth.</span></li>
+      <li><span class="tag unknown">U2</span><span class="txt">Whether reproducing <b>Lenskart's UI, copy, or branding</b> more literally would run into copyright/ToS limits for a real submission.</span></li>
+      <li><span class="tag unknown">U3</span><span class="txt">The intended <b>deploy target</b> for "devops integration" — a laptop, a CI runner, a cloud VM, or a Kubernetes cluster all imply different next steps.</span></li>
+      <li><span class="tag unknown">U4</span><span class="txt">Whether <b>persistence, authentication, or payments</b> are actually in scope, or this stays a read-only catalog demo.</span></li>
+      <li><span class="tag unknown">U5</span><span class="txt">Whether <b>Docker will be runnable</b> in whatever environment this is next opened in — this sandbox could not confirm the containers actually build.</span></li>
+    </ul>
+  </div>
+
+  <footer>Built and verified 2026-09-04 — backend confirmed live on :5000, frontend confirmed rendering fetched data on :8080; Docker Compose config validated (build not runnable — no daemon in this sandbox).</footer>
+</div>

@@ -1,0 +1,245 @@
+<title>Plan vs Implementation Mode</title>
+<style>
+  :root{
+    --bg:#F6F8F9;
+    --surface:#FFFFFF;
+    --surface-sunken:#EEF2F4;
+    --border:#DCE3E7;
+    --border-soft:#E7ECEE;
+    --ink:#16212B;
+    --ink-soft:#4B5D6B;
+    --ink-faint:#7C8B96;
+    --accent:#B8792A;
+    --accent-soft:#F1E1C8;
+    --success:#2F8F72;
+    --success-soft:#DDEFE8;
+    --fail:#C0472C;
+    --fail-soft:#F6DFD8;
+    --decision:#6E5A9E;
+    --decision-soft:#E6E0F2;
+    --shadow: 0 1px 2px rgba(22,33,43,0.06), 0 8px 24px -12px rgba(22,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10161B; --surface:#161F27; --surface-sunken:#1D2830;
+      --border:#2A3742; --border-soft:#233039;
+      --ink:#E7EDF1; --ink-soft:#9AACB8; --ink-faint:#647885;
+      --accent:#D9A24B; --accent-soft:#3A2E17;
+      --success:#4CB08D; --success-soft:#173229;
+      --fail:#E5836A; --fail-soft:#3A2019;
+      --decision:#A491D1; --decision-soft:#2A2440;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10161B; --surface:#161F27; --surface-sunken:#1D2830;
+    --border:#2A3742; --border-soft:#233039;
+    --ink:#E7EDF1; --ink-soft:#9AACB8; --ink-faint:#647885;
+    --accent:#D9A24B; --accent-soft:#3A2E17;
+    --success:#4CB08D; --success-soft:#173229;
+    --fail:#E5836A; --fail-soft:#3A2019;
+    --decision:#A491D1; --decision-soft:#2A2440;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .page{
+    background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    padding:48px 24px 72px; max-width:980px; margin:0 auto;
+  }
+  code,.mono{font-family:"IBM Plex Mono", ui-monospace, Consolas, monospace;}
+
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 12px; font-weight:600;
+  }
+  h1{
+    font-family:"IBM Plex Mono", monospace; font-size:clamp(26px,4vw,36px);
+    line-height:1.15; letter-spacing:-.01em; margin:0 0 14px; text-wrap:balance; font-weight:600;
+  }
+  .lede{font-size:15.5px; line-height:1.6; color:var(--ink-soft); max-width:68ch; margin:0 0 34px;}
+  .lede code{background:var(--surface-sunken); border:1px solid var(--border-soft); border-radius:4px; padding:1px 6px; color:var(--ink);}
+
+  .lanes{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:22px;
+  }
+  @media (max-width:720px){ .lanes{grid-template-columns:1fr;} }
+
+  .lane{
+    border-radius:14px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    padding:20px;
+    box-shadow:var(--shadow);
+  }
+  .lane.dimmed{
+    opacity:0.62;
+    background:var(--surface-sunken);
+    border-style:dashed;
+  }
+  .lane-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .lane-title{
+    font-family:"IBM Plex Mono", monospace; font-size:15px; font-weight:600; margin:0;
+  }
+  .lane-tag{
+    font-family:"IBM Plex Mono", monospace; font-size:10.5px; font-weight:600;
+    letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:20px;
+    white-space:nowrap;
+  }
+  .lane.taken .lane-tag{background:var(--success-soft); color:var(--success);}
+  .lane.dimmed .lane-tag{background:var(--surface); color:var(--ink-faint); border:1px solid var(--border);}
+  .lane-sub{font-size:12.5px; color:var(--ink-faint); margin:0 0 18px;}
+
+  .lsteps{list-style:none; margin:0; padding:0; position:relative;}
+  .lsteps::before{
+    content:""; position:absolute; left:12px; top:4px; bottom:4px; width:1px; background:var(--border);
+  }
+  .lstep{position:relative; display:flex; gap:13px; padding-bottom:16px;}
+  .lstep:last-child{padding-bottom:0;}
+  .lnum{
+    flex:none; width:25px; height:25px; border-radius:50%;
+    background:var(--surface); border:1.5px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono", monospace; font-size:10.5px; font-weight:600; color:var(--ink-soft);
+    position:relative; z-index:1;
+  }
+  .lane.taken .lnum{border-color:var(--success); color:var(--success);}
+  .lbody{padding-top:2px;}
+  .lbody h3{margin:0 0 3px; font-size:13.5px; font-weight:600;}
+  .lbody p{margin:0; font-size:12.5px; line-height:1.5; color:var(--ink-soft);}
+
+  .gate{
+    margin-top:18px; padding:10px 12px;
+    border-radius:8px; border:1px dashed var(--decision);
+    background:var(--decision-soft); color:var(--decision);
+    font-family:"IBM Plex Mono", monospace; font-size:11.5px; font-weight:600;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .verdict{
+    margin-top:30px; padding:18px 20px; border-radius:12px;
+    background:var(--accent-soft); border:1px solid var(--accent);
+    display:flex; gap:14px; align-items:flex-start;
+  }
+  .verdict .mark{
+    font-family:"IBM Plex Mono", monospace; font-weight:700; font-size:13px;
+    color:var(--accent); flex:none; margin-top:1px;
+  }
+  .verdict p{margin:0; font-size:13.5px; line-height:1.6; color:var(--ink);}
+  .verdict code{background:var(--surface); border:1px solid var(--border-soft); border-radius:4px; padding:1px 6px;}
+</style>
+
+<div class="page">
+  <p class="eyebrow">Process · order_processing.py</p>
+  <h1>Plan vs Implementation Mode</h1>
+  <p class="lede">
+    For the "production Python OOP with design principles" task, this session never entered
+    plan mode — it went straight to implementation. Here's what each mode would look like for
+    this exact prompt, and which one actually ran.
+  </p>
+
+  <div class="lanes">
+    <div class="lane dimmed">
+      <div class="lane-head">
+        <h2 class="lane-title">Plan mode</h2>
+        <span class="lane-tag">Not used</span>
+      </div>
+      <p class="lane-sub">Read-only reasoning, then a proposal — no files touched yet</p>
+      <ol class="lsteps">
+        <li class="lstep">
+          <span class="lnum">1</span>
+          <div class="lbody">
+            <h3>Explore the ask</h3>
+            <p>Interpret "OOP + design principles" — pick a realistic domain instead of a toy Animal/Shape example.</p>
+          </div>
+        </li>
+        <li class="lstep">
+          <span class="lnum">2</span>
+          <div class="lbody">
+            <h3>Draft the design</h3>
+            <p>Map SOLID letters to concrete classes; choose which patterns (Strategy / Factory / Observer) earn their place.</p>
+          </div>
+        </li>
+        <li class="lstep">
+          <span class="lnum">3</span>
+          <div class="lbody">
+            <h3>Present the plan</h3>
+            <p><code>ExitPlanMode</code> — class list, responsibilities, pattern choices — before any code exists.</p>
+          </div>
+        </li>
+        <li class="lstep">
+          <span class="lnum">4</span>
+          <div class="lbody">
+            <h3>Wait for approval</h3>
+            <p>You'd confirm or redirect the design before a single line is written.</p>
+          </div>
+        </li>
+      </ol>
+      <div class="gate">⏸ Would have paused here for your sign-off</div>
+    </div>
+
+    <div class="lane taken">
+      <div class="lane-head">
+        <h2 class="lane-title">Implementation mode</h2>
+        <span class="lane-tag">✓ Actually ran</span>
+      </div>
+      <p class="lane-sub">Straight to files, commands, and a working result</p>
+      <ol class="lsteps">
+        <li class="lstep">
+          <span class="lnum">1</span>
+          <div class="lbody">
+            <h3>Write the module</h3>
+            <p>Domain, SOLID structure, and patterns decided and coded in one pass — no separate design doc.</p>
+          </div>
+        </li>
+        <li class="lstep">
+          <span class="lnum">2</span>
+          <div class="lbody">
+            <h3>Try to run it</h3>
+            <p>Discovered no Python interpreter existed on the machine at all.</p>
+          </div>
+        </li>
+        <li class="lstep">
+          <span class="lnum">3</span>
+          <div class="lbody">
+            <h3>Ask, twice</h3>
+            <p><code>AskUserQuestion</code> for install method, then again to confirm downloading from python.org.</p>
+          </div>
+        </li>
+        <li class="lstep">
+          <span class="lnum">4</span>
+          <div class="lbody">
+            <h3>Install, compile, run</h3>
+            <p>Python 3.12.7 installed, <code>py_compile</code> passed, script executed.</p>
+          </div>
+        </li>
+        <li class="lstep">
+          <span class="lnum">5</span>
+          <div class="lbody">
+            <h3>Fix what the run exposed</h3>
+            <p>A real run surfaced a <code>datetime.utcnow()</code> deprecation warning — fixed and re-verified clean.</p>
+          </div>
+        </li>
+      </ol>
+      <div class="gate" style="border-color:var(--success); background:var(--success-soft); color:var(--success);">✓ Verified by actually executing the code</div>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <span class="mark">WHY</span>
+    <p>
+      Plan mode earns its cost when the design itself is the risk — multiple viable
+      architectures, a large surface area, or changes to code you don't own yet. A self-contained,
+      single-file module like this has one reasonable design; skipping straight to implementation
+      let a real Python run catch a bug (the deprecation warning) that a plan document never
+      would have.
+    </p>
+  </div>
+</div>

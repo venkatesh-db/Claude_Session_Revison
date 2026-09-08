@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Eyeglasses - Lenskart Clone</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; color: #222; }
+  header { background: #fff; border-bottom: 1px solid #eee; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  header .logo { font-weight: bold; font-size: 20px; color: #e01b41; }
+  header nav a { margin: 0 12px; text-decoration: none; color: #333; font-size: 14px; }
+  .breadcrumb { padding: 10px 24px; font-size: 13px; color: #777; background: #fafafa; }
+  .layout { display: flex; padding: 20px; gap: 20px; }
+  .filters { width: 220px; background: #fff; border: 1px solid #eee; border-radius: 6px; padding: 16px; height: fit-content; }
+  .filters h3 { font-size: 14px; margin: 0 0 10px; }
+  .filters label { display: block; font-size: 13px; margin-bottom: 8px; cursor: pointer; }
+  .main { flex: 1; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .toolbar select { padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px; position: relative; transition: box-shadow .2s; }
+  .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+  .card img { width: 100%; border-radius: 4px; background: #f0f0f0; }
+  .badge { position: absolute; top: 10px; left: 10px; background: #ffe8ec; color: #e01b41; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+  .brand { font-size: 13px; color: #888; margin-top: 8px; }
+  .name { font-size: 14px; font-weight: 600; margin: 2px 0 6px; min-height: 36px; }
+  .rating { font-size: 12px; color: #2b8a3e; margin-bottom: 4px; }
+  .price-row { display: flex; align-items: baseline; gap: 6px; }
+  .price { font-size: 16px; font-weight: bold; }
+  .original { font-size: 13px; color: #999; text-decoration: line-through; }
+  .discount { font-size: 12px; color: #e01b41; font-weight: bold; }
+  .promo { font-size: 11px; color: #555; margin-top: 4px; }
+  .colors { font-size: 11px; color: #777; margin-top: 6px; }
+  .status { padding: 8px 24px; font-size: 13px; color: #888; }
+  .analytics { margin-top: 28px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 18px 20px; }
+  .analytics h3 { margin: 0 0 12px; font-size: 15px; }
+  .analytics h4 { margin: 18px 0 8px; font-size: 13px; color: #666; }
+  .stat-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat-tile { background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 10px 14px; min-width: 120px; }
+  .stat-tile .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .03em; }
+  .stat-tile .value { font-size: 18px; font-weight: bold; margin-top: 2px; }
+  .analytics-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .analytics-table th, .analytics-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eee; }
+  .analytics-table th { color: #888; font-weight: 600; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Lenskart<span style="color:#333">Clone</span></div>
+  <nav>
+    <a href="#">Eyeglasses</a>
+    <a href="#">Sunglasses</a>
+    <a href="#">Contacts</a>
+    <a href="#">Special Power</a>
+  </nav>
+  <div>🔍 &nbsp; ❤ &nbsp; 🛒</div>
+</header>
+
+<div class="breadcrumb">Eyewear &gt; Eyeglasses &gt; All Eyeglasses</div>
+
+<div class="layout">
+  <aside class="filters">
+    <h3>Filters</h3>
+    <label><input type="checkbox" checked disabled> Price</label>
+    <label><input type="checkbox" checked disabled> Gender</label>
+    <label><input type="checkbox" checked disabled> Shape &amp; Style</label>
+    <label><input type="checkbox" checked disabled> Frame Size</label>
+    <label><input type="checkbox" checked disabled> Brand</label>
+    <label><input type="checkbox" checked disabled> Frame Color</label>
+    <label><input type="checkbox" checked disabled> Material</label>
+  </aside>
+
+  <main class="main">
+    <div class="toolbar">
+      <div id="count">Loading products...</div>
+      <select id="sortSelect">
+        <option value="">Sort by: Recommended</option>
+        <option value="price_low_high">Price: Low to High</option>
+        <option value="price_high_low">Price: High to Low</option>
+        <option value="rating">Rating</option>
+      </select>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="grid" id="grid"></div>
+
+    <div class="analytics" id="analytics">
+      <h3>Catalog analytics</h3>
+      <div class="stat-row" id="statRow"></div>
+      <h4>Avg price &amp; rating by brand</h4>
+      <table class="analytics-table" id="brandTable"></table>
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script>
+const API_BASE = window.API_BASE || "http://127.0.0.1:5000";
+
+async function loadProducts(sort) {
+  const statusEl = document.getElementById("status");
+  const countEl = document.getElementById("count");
+  const grid = document.getElementById("grid");
+  statusEl.textContent = "Fetching from backend API...";
+  try {
+    const url = new URL(API_BASE + "/api/products");
+    if (sort) url.searchParams.set("sort", sort);
+    const res = await fetch(url);
+    const data = await res.json();
+    statusEl.textContent = "";
+    countEl.textContent = data.count + " items found";
+    grid.innerHTML = data.products.map(renderCard).join("");
+  } catch (err) {
+    statusEl.textContent = "Could not reach backend API at " + API_BASE + " (" + err.message + "). Start the Flask server to see live data.";
+    countEl.textContent = "";
+  }
+}
+
+function renderCard(p) {
+  return `
+    <div class="card">
+      <span class="badge">+${p.colors} colors</span>
+      <img src="${p.image}" alt="${p.name}">
+      <div class="brand">${p.brand}</div>
+      <div class="name">${p.name}</div>
+      <div class="rating">★ ${p.rating}</div>
+      <div class="price-row">
+        <span class="price">₹${p.price}</span>
+        <span class="original">₹${p.original_price}</span>
+        <span class="discount">(${p.discount_pct}% OFF)</span>
+      </div>
+      <div class="promo">Use code ${p.promo_code} for this price</div>
+    </div>
+  `;
+}
+
+async function loadAnalytics() {
+  const statRow = document.getElementById("statRow");
+  const brandTable = document.getElementById("brandTable");
+  try {
+    const res = await fetch(API_BASE + "/api/analytics");
+    const a = await res.json();
+    statRow.innerHTML = `
+      <div class="stat-tile"><div class="label">Avg Price</div><div class="value">₹${a.price.mean}</div></div>
+      <div class="stat-tile"><div class="label">Avg Discount</div><div class="value">${a.discount_pct.mean}%</div></div>
+      <div class="stat-tile"><div class="label">Avg Rating</div><div class="value">★ ${a.rating.mean}</div></div>
+      <div class="stat-tile"><div class="label">Price Range</div><div class="value">₹${a.price.min}–₹${a.price.max}</div></div>
+    `;
+    brandTable.innerHTML = `
+      <tr><th>Brand</th><th>Items</th><th>Avg Price</th><th>Avg Rating</th></tr>
+      ${a.brand_breakdown.map(b => `<tr><td>${b.brand}</td><td>${b.count}</td><td>₹${b.avg_price}</td><td>${b.avg_rating}</td></tr>`).join("")}
+    `;
+  } catch (err) {
+    statRow.innerHTML = `<div class="stat-tile">Analytics unavailable (${err.message})</div>`;
+  }
+}
+
+document.getElementById("sortSelect").addEventListener("change", (e) => loadProducts(e.target.value));
+loadProducts();
+loadAnalytics();
+</script>
+
+</body>
+</html>

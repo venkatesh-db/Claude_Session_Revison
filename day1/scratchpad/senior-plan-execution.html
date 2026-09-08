@@ -1,0 +1,265 @@
+<title>Senior Dev Plan & Execution</title>
+<style>
+  :root{
+    --bg:#F6F8F9; --surface:#FFFFFF; --surface-sunken:#EEF2F4;
+    --border:#DCE3E7; --border-soft:#E7ECEE;
+    --ink:#16212B; --ink-soft:#4B5D6B; --ink-faint:#7C8B96;
+    --accent:#B8792A; --accent-soft:#F1E1C8;
+    --success:#2F8F72; --success-soft:#DDEFE8;
+    --fail:#C0472C; --fail-soft:#F6DFD8;
+    --decision:#6E5A9E; --decision-soft:#E6E0F2;
+    --shadow: 0 1px 2px rgba(22,33,43,0.06), 0 8px 24px -12px rgba(22,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10161B; --surface:#161F27; --surface-sunken:#1D2830;
+      --border:#2A3742; --border-soft:#233039;
+      --ink:#E7EDF1; --ink-soft:#9AACB8; --ink-faint:#647885;
+      --accent:#D9A24B; --accent-soft:#3A2E17;
+      --success:#4CB08D; --success-soft:#173229;
+      --fail:#E5836A; --fail-soft:#3A2019;
+      --decision:#A491D1; --decision-soft:#2A2440;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10161B; --surface:#161F27; --surface-sunken:#1D2830;
+    --border:#2A3742; --border-soft:#233039;
+    --ink:#E7EDF1; --ink-soft:#9AACB8; --ink-faint:#647885;
+    --accent:#D9A24B; --accent-soft:#3A2E17;
+    --success:#4CB08D; --success-soft:#173229;
+    --fail:#E5836A; --fail-soft:#3A2019;
+    --decision:#A491D1; --decision-soft:#2A2440;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;} body{margin:0;}
+  .page{
+    background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    padding:48px 24px 76px; max-width:1080px; margin:0 auto;
+  }
+  code,.mono{font-family:"IBM Plex Mono", ui-monospace, Consolas, monospace;}
+  .eyebrow{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); margin:0 0 12px; font-weight:600;}
+  h1{font-family:"IBM Plex Mono",monospace; font-size:clamp(26px,4vw,36px); line-height:1.15; letter-spacing:-.01em; margin:0 0 14px; text-wrap:balance; font-weight:600;}
+  .lede{font-size:15.5px; line-height:1.6; color:var(--ink-soft); max-width:72ch; margin:0 0 30px;}
+  .lede code{background:var(--surface-sunken); border:1px solid var(--border-soft); border-radius:4px; padding:1px 6px; color:var(--ink);}
+
+  h2.section{
+    font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint);
+    margin:0 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+
+  /* ---- Plan mode: staged groups ---- */
+  .stage-group{margin-bottom:22px;}
+  .stage-group:last-child{margin-bottom:0;}
+  .stage-label{
+    display:flex; align-items:center; gap:8px; margin-bottom:10px;
+  }
+  .stage-dot{width:8px; height:8px; border-radius:50%; background:var(--decision);}
+  .stage-label span{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; color:var(--decision); text-transform:uppercase; letter-spacing:.05em;}
+
+  .plan-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px;
+    margin-left:16px;
+  }
+  .plan-card{
+    background:var(--surface); border:1px solid var(--border-soft); border-radius:10px;
+    padding:12px 14px; box-shadow:var(--shadow);
+  }
+  .plan-card h3{margin:0 0 5px; font-size:13px; font-weight:600;}
+  .plan-card p{margin:0; font-size:12px; line-height:1.5; color:var(--ink-soft);}
+  .plan-card .why{
+    display:block; margin-top:6px; font-size:11px; color:var(--accent); font-weight:600;
+  }
+
+  /* ---- Rationale table ---- */
+  .rationale{
+    width:100%; border-collapse:separate; border-spacing:0; margin-top:6px;
+    font-size:12.5px;
+  }
+  .rationale th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+    text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint);
+    padding:0 10px 8px; font-weight:600;
+  }
+  .rationale td{
+    background:var(--surface); border-top:1px solid var(--border-soft);
+    padding:9px 10px; color:var(--ink-soft); vertical-align:top;
+  }
+  .rationale tr:first-child td{border-top:1px solid var(--border);}
+  .rationale td:first-child{color:var(--ink); font-weight:600; white-space:nowrap;}
+  .rationale code{background:var(--surface-sunken); border:1px solid var(--border-soft); border-radius:4px; padding:1px 5px;}
+  .table-wrap{overflow-x:auto; border-radius:10px; border:1px solid var(--border); box-shadow:var(--shadow);}
+  .table-wrap table{margin-top:0;}
+
+  /* ---- Execution timeline ---- */
+  .exec-steps{list-style:none; margin:0; padding:0; position:relative;}
+  .exec-steps::before{content:""; position:absolute; left:12px; top:4px; bottom:4px; width:1px; background:var(--border);}
+  .estep{position:relative; display:flex; gap:13px; padding-bottom:14px;}
+  .estep:last-child{padding-bottom:0;}
+  .enum{
+    flex:none; width:25px; height:25px; border-radius:50%; background:var(--surface);
+    border:1.5px solid var(--success); color:var(--success);
+    display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600; z-index:1;
+  }
+  .estep.pending .enum{border-color:var(--ink-faint); color:var(--ink-faint);}
+  .ebody{background:var(--surface); border:1px solid var(--border-soft); border-radius:10px; padding:10px 13px; flex:1; box-shadow:var(--shadow);}
+  .ebody h3{margin:0 0 3px; font-size:13px; font-weight:600;}
+  .ebody p{margin:0; font-size:12px; line-height:1.5; color:var(--ink-soft);}
+  .tag{
+    display:inline-block; margin-left:8px; font-family:"IBM Plex Mono",monospace; font-size:10px;
+    font-weight:600; text-transform:uppercase; letter-spacing:.04em; padding:1px 7px; border-radius:20px;
+  }
+  .tag.done{background:var(--success-soft); color:var(--success);}
+  .tag.todo{background:var(--surface-sunken); color:var(--ink-faint); border:1px solid var(--border);}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:26px; align-items:start; margin-top:8px;}
+  @media (max-width:860px){ .cols{grid-template-columns:1fr;} }
+  .panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:22px; box-shadow:var(--shadow);
+  }
+  .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;}
+  .panel-head h2{font-family:"IBM Plex Mono",monospace; font-size:16px; margin:0; font-weight:600;}
+  .badge{font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; padding:3px 9px; border-radius:20px;}
+  .badge.think{background:var(--decision-soft); color:var(--decision);}
+  .badge.act{background:var(--success-soft); color:var(--success);}
+  .panel-sub{font-size:12px; color:var(--ink-faint); margin:0 0 18px;}
+
+  .verdict{
+    margin-top:32px; padding:18px 20px; border-radius:12px;
+    background:var(--accent-soft); border:1px solid var(--accent);
+    display:flex; gap:14px; align-items:flex-start;
+  }
+  .verdict .mark{font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:13px; color:var(--accent); flex:none; margin-top:1px;}
+  .verdict p{margin:0; font-size:13.5px; line-height:1.6; color:var(--ink);}
+  .verdict code{background:var(--surface); border:1px solid var(--border-soft); border-radius:4px; padding:1px 6px;}
+
+  section{margin-bottom:44px;}
+  section:last-of-type{margin-bottom:0;}
+</style>
+
+<div class="page">
+  <p class="eyebrow">Senior Engineer Workflow · order_processing.py</p>
+  <h1>Plan Mode &amp; Execution Mode</h1>
+  <p class="lede">
+    How a senior engineer would actually think through "production Python OOP with design
+    principles" before writing code, and how that plan carries into execution — mapped against
+    what this session did.
+  </p>
+
+  <section>
+    <h2 class="section">01 · Plan mode — design thinking</h2>
+
+    <div class="stage-group">
+      <div class="stage-label"><span class="stage-dot"></span><span>Discover</span></div>
+      <div class="plan-grid">
+        <div class="plan-card">
+          <h3>Frame the problem</h3>
+          <p>"OOP + design principles" is underspecified — pick a domain with real variability (payment methods, discount rules) so SOLID has something to bite on, not a toy Animal/Shape hierarchy.</p>
+        </div>
+        <div class="plan-card">
+          <h3>Model the domain</h3>
+          <p><code>Order</code>, <code>LineItem</code> as entities/value objects; <code>OrderStatus</code> as an explicit state machine (PENDING→PAID→SHIPPED, or CANCELLED) instead of loose booleans.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-group">
+      <div class="stage-label"><span class="stage-dot"></span><span>Design</span></div>
+      <div class="plan-grid">
+        <div class="plan-card">
+          <h3>Find the seams</h3>
+          <p>What will change independently? Payment provider, discount policy, notification channel. Each seam becomes an abstraction, not an if/elif ladder.</p>
+          <span class="why">→ drives OCP/DIP</span>
+        </div>
+        <div class="plan-card">
+          <h3>Assign single responsibilities</h3>
+          <p><code>OrderService</code> orchestrates only; inventory, payment, and notification each get their own class so a change to one never forces a change to another.</p>
+          <span class="why">→ drives SRP</span>
+        </div>
+        <div class="plan-card">
+          <h3>Pick patterns by fit, not by name-dropping</h3>
+          <p>A pattern only earns its place if removing it makes the code worse. See rationale table below.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-group">
+      <div class="stage-label"><span class="stage-dot"></span><span>De-risk</span></div>
+      <div class="plan-grid">
+        <div class="plan-card">
+          <h3>Define the failure model</h3>
+          <p>What happens if payment fails after inventory is reserved? Plan the rollback (release stock) before writing the happy path.</p>
+        </div>
+        <div class="plan-card">
+          <h3>Decide what's testable</h3>
+          <p>External SDKs (payment gateways) get wrapped behind a <code>Protocol</code> so tests never hit the network.</p>
+        </div>
+        <div class="plan-card">
+          <h3>Flag correctness traps</h3>
+          <p>Money uses <code>Decimal</code>, never <code>float</code>; state transitions are validated, not assumed.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="rationale">
+        <tr><th>Pattern</th><th>Where</th><th>Why it earns its place</th></tr>
+        <tr><td>Strategy</td><td><code>DiscountStrategy</code>, <code>PaymentProcessor</code></td><td>Swapping the algorithm (10% off, free-shipping threshold, credit card vs. PayPal) must not touch <code>OrderService</code>.</td></tr>
+        <tr><td>Factory</td><td><code>PaymentProcessorFactory</code></td><td>Construction logic (which SDK client, which credentials) is noisy and orthogonal to <em>using</em> a processor — isolate it.</td></tr>
+        <tr><td>Observer</td><td><code>OrderObserver</code></td><td>Email and audit logging are side effects of a status change, not part of placing an order — decoupling keeps <code>OrderService</code> ignorant of who's listening.</td></tr>
+        <tr><td>Dependency Injection</td><td><code>OrderService.__init__</code></td><td>Depending on abstractions passed in (not constructed internally) is what makes the whole thing unit-testable.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section">02 · Execution mode — building it</h2>
+    <ol class="exec-steps">
+      <li class="estep">
+        <span class="enum">1</span>
+        <div class="ebody"><h3>Implement the plan as code <span class="tag done">done</span></h3>
+        <p>Entities, abstractions, and concrete strategies written in the order the plan laid out — domain first, seams second.</p></div>
+      </li>
+      <li class="estep">
+        <span class="enum">2</span>
+        <div class="ebody"><h3>Compile <span class="tag done">done</span></h3>
+        <p><code>python -m py_compile order_processing.py</code> — catches syntax errors before anything runs.</p></div>
+      </li>
+      <li class="estep">
+        <span class="enum">3</span>
+        <div class="ebody"><h3>Execute the golden path <span class="tag done">done</span></h3>
+        <p>Ran the demo order end-to-end — this is what a plan document alone can never verify.</p></div>
+      </li>
+      <li class="estep">
+        <span class="enum">4</span>
+        <div class="ebody"><h3>Fix what execution exposed <span class="tag done">done</span></h3>
+        <p>A real run surfaced a <code>datetime.utcnow()</code> deprecation warning the plan never anticipated — fixed and re-verified clean.</p></div>
+      </li>
+      <li class="estep pending">
+        <span class="enum">5</span>
+        <div class="ebody"><h3>Unit tests for the failure paths <span class="tag todo">not yet in this session</span></h3>
+        <p>Insufficient stock, declined payment, illegal status transition — the plan's "de-risk" step defined these; a senior engineer would test them explicitly, not just the happy path.</p></div>
+      </li>
+      <li class="estep pending">
+        <span class="enum">6</span>
+        <div class="ebody"><h3>Static checks &amp; review <span class="tag todo">not yet in this session</span></h3>
+        <p><code>mypy</code>/<code>ruff</code> plus a second-reviewer pass before this would actually ship.</p></div>
+      </li>
+    </ol>
+  </section>
+
+  <div class="verdict">
+    <span class="mark">TAKEAWAY</span>
+    <p>
+      Plan mode's value here isn't the diagram — it's forcing the failure model and the seams
+      to be decided <em>before</em> code, so implementation is transcription, not discovery. This
+      session skipped the explicit sign-off step (steps 3–4 in Plan Mode above) because the design
+      space was small enough to hold in one pass, but the thinking still happened; it just happened
+      inline instead of as a separate artifact you approved first.
+    </p>
+  </div>
+</div>
